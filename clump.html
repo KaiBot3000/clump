@@ -31,7 +31,7 @@ var nodes = d3.range(200).map(function() { return {radius: Math.random() * 12 + 
     root = nodes[0],
     color = d3.scale.category10();
 
-// Set first bubble values
+// Set first bubble values (invisible and in the middle of the page)
 root.radius = 0;
 root.fixed = true;
 
@@ -69,9 +69,11 @@ force.on("tick", function(e) {
       .attr("cy", function(d) { return d.y; });
 });
 
-// identify mouse location
+// Move away from pointer
 svg.on("mousemove", function() {
+  // identify mouse location
   var p1 = d3.mouse(this);
+  // move the invisible root node to the mouse position
   root.px = p1[0];
   root.py = p1[1];
   force.resume();
@@ -79,7 +81,7 @@ svg.on("mousemove", function() {
 
 // Control collisions
 function collide(node) {
-  var r = node.radius + 16,
+  var r = node.radius + 25,
       nx1 = node.x - r,
       nx2 = node.x + r,
       ny1 = node.y - r,
