@@ -66,9 +66,26 @@ force.on("tick", function(e) {
       i = 0,
       n = nodes.length;
   while (++i < n) q.visit(collide(nodes[i]));
-  svg.selectAll("circle")
-      .attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; });
+  // svg.selectAll("circle")
+  //     .attr("cx", function(d) { return d.x; })
+      // .attr("cy", function(d) { return d.y; });
+
+    svg.selectAll("circle")
+      .attr("cx", function(d) { return d.x = Math.max(d.radius, Math.min(width - d.radius, d.x)); })
+      .attr("cy", function(d) { return d.y = Math.max(d.radius, Math.min(width - d.radius, d.y)); });
+
+  // nodes don't have attrs :(
+  // for (i=0; i < nodes.length; i++) {
+  //   nodes[i].attr("x", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
+  //   .attr("y", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
+  // }
+
+  // clumps all in upper left :(
+  // for (i=0; i < nodes.length; i++) {
+  //   nodes[i].x = Math.max(nodes[i].radius, Math.min(width - nodes[i].radius, nodes[i].x));
+  //   nodes[i].y = Math.max(nodes[i].radius, Math.min(width - nodes[i].radius, nodes[i].y));
+  // }
+
 });
 
 // Move away from pointer
