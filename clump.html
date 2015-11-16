@@ -22,94 +22,112 @@
 //     .domain([0, 2, 4])
 //     .range(["red", "yellow", "green"]);
 
+function makeD3() {
+  // clear old graph
+  d3.select("svg").remove();
+  // Will become size of canvas element
+  var width = window.innerWidth;
+  var height = window.innerHeight;
 
-// Will become size of canvas element
-var width = window.innerWidth;
-var height = window.innerHeight;
 
+  // Make 200 nodes with random sizes, name the first one root, color will be a scale
+  var nodes = d3.range(100).map(function() { return {radius: Math.random() * 5 + 4}; }),
+      root = nodes[0], // this is the node they all run from
+      color = d3.scale.category10();
 
-// Make 200 nodes with random sizes, name the first one root, color will be a scale
-var nodes = d3.range(200).map(function() { return {radius: Math.random() * 12 + 4}; }),
-    root = nodes[0],
-    color = d3.scale.category10();
+  // Set first bubble values (invisible and in the middle of the page)
+  root.radius = 0;
+  root.fixed = true;
 
-// Set first bubble values (invisible and in the middle of the page)
-root.radius = 0;
-root.fixed = true;
+  // Make a layout on a canvas of all the nodes, with gravity and charge.
+  var force = d3.layout.force()
+      .gravity(0.025)
+      // if i===True, i = 0, else i = -2000
+      .charge(function(d, i) { return i ? 0 : -20000; })
+      .nodes(nodes)
+      .size([width, height]);
 
-// Make a layout on a canvas of all the nodes, with gravity and charge.
-var force = d3.layout.force()
-    .gravity(0.025)
-    .charge(function(d, i) { return i ? 0 : -2000; })
-    .nodes(nodes)
-    .size([width, height]);
+  // Start the animation
+  force.start();
 
-// Start the animation
-force.start();
+  // Add an svg element to the body
+  var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
 
-// Add an svg element to the body
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+  // Make a circle for every node, give it a radius and color
+  svg.selectAll("circle")
+      .data(nodes.slice(1))
+    .enter().append("circle")
+      .attr("r", function(d) { return d.radius; })
+      .style("fill", "#8c8c8c");
+      // .style("fill", function(d, i) { return color(i % 3); });
 
-// Make a circle for every node, give it a radius and color
-svg.selectAll("circle")
-    .data(nodes.slice(1))
-  .enter().append("circle")
-    .attr("r", function(d) { return d.radius; })
-    .style("fill", "#8c8c8c");
-    // .style("fill", function(d, i) { return color(i % 3); });
+  // Move nodes 
+  force.on("tick", function(e) {
+    // console.log(e);
+    // moves root node back to center
+    // damper = 0.1;
 
-// Move nodes 
-force.on("tick", function(e) {
-  var q = d3.geom.quadtree(nodes),
-      i = 0,
-      n = nodes.length;
-  while (++i < n) q.visit(collide(nodes[i]));
-  // The old way
-  // svg.selectAll("circle")
-  //     .attr("cx", function(d) { return d.x; })
-  //     .attr("cy", function(d) { return d.y; });
+    // root.x = root.x + (width/2 - root.x) * (damper + 0.71) * e.alpha; // e.alpha goes from 0.099 to 0.005 each move
+    //   // if at 0, 0 + (500 - 0) * (0.1 + 0.71) * 0.099 = 40
+    //   // if at 40, 76
+    //   // if at 76, 110
+    // root.y = root.y + (height/2 - root.y) * (damper + 0.71) * e.alpha;
+    // console.log(root.x + "  ---->  " + width/2);
 
-    // Holds circles inside the bounds of window height and width
-    svg.selectAll("circle")
-      .attr("cx", function(d) { return d.x = Math.max(d.radius, Math.min(width - d.radius, d.x)); })
-      .attr("cy", function(d) { return d.y = Math.max(d.radius, Math.min(height - d.radius, d.y)); })
+    // Handles circle locations
+    var q = d3.geom.quadtree(nodes),
+        i = 0,
+        n = nodes.length;
+    while (++i < n) q.visit(collide(nodes[i]));
+    // The old way
+    // svg.selectAll("circle")
+    //     .attr("cx", function(d) { return d.x; })
+    //     .attr("cy", function(d) { return d.y; });
 
-});
+      // Holds circles inside the bounds of window height and width
+      svg.selectAll("circle")
+        .attr("cx", function(d) { return d.x = Math.max(d.radius, Math.min(width - d.radius, d.x)); })
+        .attr("cy", function(d) { return d.y = Math.max(d.radius, Math.min(height - d.radius, d.y)); })
 
-// Move away from pointer
-svg.on("mousemove", function() {
-  // identify mouse location
-  var p1 = d3.mouse(this);
-  // move the invisible root node to the mouse position
-  root.px = p1[0];
-  root.py = p1[1];
-  force.resume();
-});
+  });
 
-// Control collisions
-function collide(node) {
-  var r = node.radius + 25,
-      nx1 = node.x - r,
-      nx2 = node.x + r,
-      ny1 = node.y - r,
-      ny2 = node.y + r;
-  return function(quad, x1, y1, x2, y2) {
-    if (quad.point && (quad.point !== node)) {
-      var x = node.x - quad.point.x,
-          y = node.y - quad.point.y,
-          l = Math.sqrt(x * x + y * y),
-          r = node.radius + quad.point.radius;
-      if (l < r) {
-        l = (l - r) / l * .5;
-        node.x -= x *= l;
-        node.y -= y *= l;
-        quad.point.x += x;
-        quad.point.y += y;
+  // Move away from pointer
+  svg.on("mousemove", function() {
+    // identify mouse location
+    var p1 = d3.mouse(this);
+    // move the invisible root node to the mouse position
+    root.px = p1[0];
+    root.py = p1[1];
+    force.resume();
+  });
+
+  // Control collisions
+  function collide(node) {
+    var r = node.radius + 25,
+        nx1 = node.x - r,
+        nx2 = node.x + r,
+        ny1 = node.y - r,
+        ny2 = node.y + r;
+    return function(quad, x1, y1, x2, y2) {
+      if (quad.point && (quad.point !== node)) {
+        var x = node.x - quad.point.x,
+            y = node.y - quad.point.y,
+            l = Math.sqrt(x * x + y * y),
+            r = node.radius + quad.point.radius;
+        if (l < r) {
+          l = (l - r) / l * .5;
+          node.x -= x *= l;
+          node.y -= y *= l;
+          quad.point.x += x;
+          quad.point.y += y;
+        }
       }
-    }
-    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-  };
-}
+      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+    };
+  }
+};
+makeD3();
+$(window).resize(makeD3);
 </script>
