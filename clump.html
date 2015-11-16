@@ -16,15 +16,15 @@
 function makeD3() {
   // clear old graph
   d3.select("svg").remove();
-  // Will become size of canvas element
+  // Will become size of canvas element; -20 takes off scroll bars
   var width = window.innerWidth - 20;
   var height = window.innerHeight - 20;
 
-  // Make 200 nodes with random sizes, name the first one root, color will be a scale
+  // Make nodes with random sizes, name the first one root
   var nodes = d3.range(100).map(function() { return {radius: Math.random() * 5 + 4}; }),
       root = nodes[0]; // this is the node they all run from
 
-  // Set first bubble values (invisible and in the middle of the page)
+  // Make root invisible
   root.radius = 0;
   root.fixed = true;
 
@@ -108,4 +108,5 @@ makeD3();
 
 // reload graph on resize
 $(window).resize(makeD3);
+
 </script>
