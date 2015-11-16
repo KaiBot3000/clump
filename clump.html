@@ -3,7 +3,7 @@
 <head>
   <style>
     body {
-      background-color: #999999;
+      background-color: rgb(75,75,75);
     }
   </style>
 </head>
@@ -13,27 +13,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.8/d3.min.js"></script>
 <script>
 
-// make a custom color scale
-// var color = d3.scale.ordinal()
-//     .range(["#00ffff", 
-//             "#00ff00"
-//            ]);
-// var color = d3.scale.linear()
-//     .domain([0, 2, 4])
-//     .range(["red", "yellow", "green"]);
-
 function makeD3() {
   // clear old graph
   d3.select("svg").remove();
   // Will become size of canvas element
-  var width = window.innerWidth;
-  var height = window.innerHeight;
-
+  var width = window.innerWidth - 20;
+  var height = window.innerHeight - 20;
 
   // Make 200 nodes with random sizes, name the first one root, color will be a scale
   var nodes = d3.range(100).map(function() { return {radius: Math.random() * 5 + 4}; }),
-      root = nodes[0], // this is the node they all run from
-      color = d3.scale.category10();
+      root = nodes[0]; // this is the node they all run from
 
   // Set first bubble values (invisible and in the middle of the page)
   root.radius = 0;
@@ -60,32 +49,17 @@ function makeD3() {
       .data(nodes.slice(1))
     .enter().append("circle")
       .attr("r", function(d) { return d.radius; })
-      .style("fill", "#8c8c8c");
-      // .style("fill", function(d, i) { return color(i % 3); });
+      // .style("fill", "#8c8c8c");
+      .style("fill", "rgb(90,90,90)");
 
   // Move nodes 
   force.on("tick", function(e) {
-    // console.log(e);
-    // moves root node back to center
-    // damper = 0.1;
-
-    // root.x = root.x + (width/2 - root.x) * (damper + 0.71) * e.alpha; // e.alpha goes from 0.099 to 0.005 each move
-    //   // if at 0, 0 + (500 - 0) * (0.1 + 0.71) * 0.099 = 40
-    //   // if at 40, 76
-    //   // if at 76, 110
-    // root.y = root.y + (height/2 - root.y) * (damper + 0.71) * e.alpha;
-    // console.log(root.x + "  ---->  " + width/2);
 
     // Handles circle locations
     var q = d3.geom.quadtree(nodes),
         i = 0,
         n = nodes.length;
     while (++i < n) q.visit(collide(nodes[i]));
-    // The old way
-    // svg.selectAll("circle")
-    //     .attr("cx", function(d) { return d.x; })
-    //     .attr("cy", function(d) { return d.y; });
-
       // Holds circles inside the bounds of window height and width
       svg.selectAll("circle")
         .attr("cx", function(d) { return d.x = Math.max(d.radius, Math.min(width - d.radius, d.x)); })
@@ -93,7 +67,7 @@ function makeD3() {
 
   });
 
-  // Move away from pointer
+  // Anchor root to mouse
   svg.on("mousemove", function() {
     // identify mouse location
     var p1 = d3.mouse(this);
@@ -128,6 +102,10 @@ function makeD3() {
     };
   }
 };
+
+// Make initial graph
 makeD3();
+
+// reload graph on resize
 $(window).resize(makeD3);
 </script>
