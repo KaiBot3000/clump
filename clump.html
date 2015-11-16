@@ -9,6 +9,7 @@
 </head>
 
 <body>
+<script src='https://code.jquery.com/jquery.js'> </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.8/d3.min.js"></script>
 <script>
 
@@ -23,8 +24,9 @@
 
 
 // Will become size of canvas element
-var width = 960,
-    height = 500;
+var width = window.innerWidth;
+var height = window.innerHeight;
+
 
 // Make 200 nodes with random sizes, name the first one root, color will be a scale
 var nodes = d3.range(200).map(function() { return {radius: Math.random() * 12 + 4}; }),
